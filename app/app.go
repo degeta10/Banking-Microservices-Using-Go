@@ -1,6 +1,8 @@
 package app
 
 import (
+	"banking/domain"
+	"banking/service"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,11 +15,11 @@ func Start() {
 
 	router := mux.NewRouter()
 
+	// Handlers
+	ch := CustomerHandlers{service: service.NewCustomerService(domain.NewCustomerRespositoryStub())}
+
 	// Routes
-	router.HandleFunc("/greet", greet).Methods(http.MethodGet)
-	router.HandleFunc("/customers", getAllCustomers).Methods(http.MethodGet)
-	router.HandleFunc("/customers", createCustomer).Methods(http.MethodPost)
-	router.HandleFunc("/customers/{customer_id:[0-9]+}", getCustomer).Methods(http.MethodGet)
+	router.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
 
 	// Start Server
 	log.Fatal(http.ListenAndServe("localhost:8000", router))
