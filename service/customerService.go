@@ -1,11 +1,14 @@
 package service
 
-import "banking/domain"
+import (
+	"banking/domain"
+	"banking/errs"
+)
 
 // CustomerService ..
 type CustomerService interface {
-	GetAllCustomer() ([]domain.Customer, error)
-	GetCustomer(string) (*domain.Customer, error)
+	GetAllCustomer() ([]domain.Customer, *errs.AppError)
+	GetCustomer(string) (*domain.Customer, *errs.AppError)
 }
 
 // DefaultCustomerService ..
@@ -14,12 +17,12 @@ type DefaultCustomerService struct {
 }
 
 // GetAllCustomer ..
-func (s DefaultCustomerService) GetAllCustomer() ([]domain.Customer, error) {
+func (s DefaultCustomerService) GetAllCustomer() ([]domain.Customer, *errs.AppError) {
 	return s.repo.FindAll()
 }
 
 // GetCustomer ..
-func (s DefaultCustomerService) GetCustomer(id string) (*domain.Customer, error) {
+func (s DefaultCustomerService) GetCustomer(id string) (*domain.Customer, *errs.AppError) {
 	return s.repo.FindByID(id)
 }
 
