@@ -7,7 +7,7 @@ import (
 
 // CustomerService ..
 type CustomerService interface {
-	GetAllCustomer() ([]domain.Customer, *errs.AppError)
+	GetAllCustomer(string) ([]domain.Customer, *errs.AppError)
 	GetCustomer(string) (*domain.Customer, *errs.AppError)
 }
 
@@ -17,8 +17,14 @@ type DefaultCustomerService struct {
 }
 
 // GetAllCustomer ..
-func (s DefaultCustomerService) GetAllCustomer() ([]domain.Customer, *errs.AppError) {
-	return s.repo.FindAll()
+func (s DefaultCustomerService) GetAllCustomer(status string) ([]domain.Customer, *errs.AppError) {
+	if status == "active" {
+		return s.repo.FindAll("1")
+	} else if status == "inactive" {
+		return s.repo.FindAll("0")
+	} else {
+		return s.repo.FindAll("")
+	}
 }
 
 // GetCustomer ..
