@@ -7,41 +7,31 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
 // CustomerRepositoryDb ..
 type CustomerRepositoryDb struct {
-	client *sql.DB
+	client *sqlx.DB
 }
 
 // FindAll ..
 func (d CustomerRepositoryDb) FindAll(status string) ([]Customer, *errs.AppError) {
 
-	var rows *sql.Rows
 	var err error
+	customers := make([]Customer, 0)
 
 	if status == "" {
 		findAllSQL := "SELECT * FROM customers"
-		rows, err = d.client.Query(findAllSQL)
+		err = d.client.Select(&customers, findAllSQL)
 	} else {
 		findAllSQL := "SELECT * FROM customers WHERE status = ?"
-		rows, err = d.client.Query(findAllSQL, status)
+		err = d.client.Select(&customers, findAllSQL, status)
 	}
 
 	if err != nil {
 		logger.Error("Error while querying customers table: " + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected Error")
-	}
-
-	customers := make([]Customer, 0)
-	for rows.Next() {
-		var c Customer
-		err := rows.Scan(&c.Id, &c.Name, &c.DateofBirth, &c.City, &c.Zipcode, &c.Status)
-		if err != nil {
-			logger.Error("Error while querying customers table: " + err.Error())
-			return nil, errs.NewUnexpectedError("Unexpected Error")
-		}
-		customers = append(customers, c)
 	}
 
 	return customers, nil
@@ -51,10 +41,9 @@ func (d CustomerRepositoryDb) FindAll(status string) ([]Customer, *errs.AppError
 func (d CustomerRepositoryDb) FindByID(id string) (*Customer, *errs.AppError) {
 
 	customerSQL := "SELECT * FROM customers WHERE id = ?"
-	row := d.client.QueryRow(customerSQL, id)
-
 	var c Customer
-	err := row.Scan(&c.Id, &c.Name, &c.DateofBirth, &c.City, &c.Zipcode, &c.Status)
+	err := d.client.Get(&c, customerSQL, id)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("Customer Not Found")
@@ -67,7 +56,7 @@ func (d CustomerRepositoryDb) FindByID(id string) (*Customer, *errs.AppError) {
 
 // NewCustomerRepositoryDb ..
 func NewCustomerRepositoryDb() CustomerRepositoryDb {
-	client, err := sql.Open("mysql", "global:qwe123@/banking")
+	client, err := sqlx.Open("mysql", "global:qwe123@/banking")
 	if err != nil {
 		panic(err)
 	}
