@@ -6,12 +6,19 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 // Start ..
 func Start() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	router := mux.NewRouter()
 
@@ -23,7 +30,9 @@ func Start() {
 	router.HandleFunc("/customer/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
 
 	// Start Server
-	log.Fatal(http.ListenAndServe("localhost:8000", router))
+	address := os.Getenv("SERVER_ADDRESS")
+	port := os.Getenv("SERVER_PORT")
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%s", address, port), router))
 }
 
 func createCustomer(w http.ResponseWriter, r *http.Request) {
