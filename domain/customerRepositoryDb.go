@@ -4,9 +4,6 @@ import (
 	"banking/errs"
 	"banking/logger"
 	"database/sql"
-	"fmt"
-	"os"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -57,19 +54,6 @@ func (d CustomerRepositoryDb) FindByID(id string) (*Customer, *errs.AppError) {
 }
 
 // NewCustomerRepositoryDb ..
-func NewCustomerRepositoryDb() CustomerRepositoryDb {
-	driver := os.Getenv("DATABASE_DRIVER")
-	dbname := os.Getenv("DATABASE_NAME")
-	dbhost := os.Getenv("DATABASE_HOST")
-	dbport := os.Getenv("DATABASE_PORT")
-	dbuser := os.Getenv("DATABASE_USER")
-	dbpassword := os.Getenv("DATABASE_PASSWORD")
-	client, err := sqlx.Open(fmt.Sprintf("%s", driver), fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbuser, dbpassword, dbhost, dbport, dbname))
-	if err != nil {
-		panic(err)
-	}
-	client.SetConnMaxLifetime(time.Minute * 3)
-	client.SetMaxOpenConns(10)
-	client.SetMaxIdleConns(10)
+func NewCustomerRepositoryDb(client *sqlx.DB) CustomerRepositoryDb {
 	return CustomerRepositoryDb{client: client}
 }
